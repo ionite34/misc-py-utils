@@ -8,6 +8,7 @@ import sys
 import mmap
 from collections import Counter
 
+
 def get_num_lines(file_path):
     fp = open(file_path, "r+")
     buf = mmap.mmap(fp.fileno(), 0)
@@ -15,6 +16,7 @@ def get_num_lines(file_path):
     while buf.readline():
         lines += 1
     return lines
+
 
 def main():
     # check if a file was supplied by dragging and dropping it onto the program
@@ -25,7 +27,7 @@ def main():
         file_path = file_path.strip('"')
         # check that the file exists
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, 'r'):
                 pass
         except FileNotFoundError:
             print("File not found")
@@ -34,13 +36,13 @@ def main():
     else:
         file_path = sys.argv[1]
         try:
-            with open(file_path, 'r') as f:
+            with open(file_path, 'r'):
                 pass
         except FileNotFoundError:
             print("File not found")
             input("Press enter to exit")
             exit(0)
-        
+
     # parse the file name to get the file name only
     file_name = file_path.split('/')[-1]
 
@@ -64,6 +66,10 @@ def main():
         reader = csv.reader(csvfile, delimiter=delimiter)
         header = next(reader)
 
+    # initialize text_index
+    text_index = None
+
+    # get the index of the text column
     if 'text' in header:
         text_index = header.index('text')
     else:
@@ -99,7 +105,7 @@ def main():
             text = line.split(delimiter)[text_index]
             # split the text into words
             words = text.split()
-            
+
             # update counts
             word_count += len(words)
             char_count += len(line)
@@ -110,10 +116,11 @@ def main():
                 if not is_stop_word(word):
                     word_counter[word] += 1
 
-    # print the top 25 unique words, along with their frequency count in both number and percentage of total unique words
+    # print the top 25 unique words, along with their freq
+    # freq is printed in both number and percentage of total unique words
     print('\nTop 25 unique words:')
     for word, count in word_counter.most_common(25):
-        print(f'{word}: {count:,} ({round(count/word_count*100, 2)}%)')
+        print(f'{word}: {count:,} ({round(count / word_count * 100, 2)}%)')
     print('-' * 50)
 
     # print the counter results, with commas for readability
@@ -124,38 +131,46 @@ def main():
 
     # estimated processing time in TTS program for all the text lines
     process_names = ['11', '8', '6']
-    process_time = []
-    process_time.append(round(total_lines / 11))
-    process_time.append(round(total_lines / 8))
-    process_time.append(round(total_lines / 6))
+    process_time = [round(total_lines / 11), round(total_lines / 8), round(total_lines / 6)]
 
     # convert the time to hours, minutes, and seconds and print
     print("Estimated processing time: ")
     for i, dur_sec in enumerate(process_time):
-        min, sec = divmod(dur_sec, 60)
-        hour, min = divmod(min, 60)
+        t_min, t_sec = divmod(dur_sec, 60)
+        t_hour, t_min = divmod(t_min, 60)
 
         # If more than an hour, do not show seconds
-        if hour > 0:
+        if t_hour > 0:
             print(
-                f"    > At {process_names[i]} lines/s : {hour:d} hours {min:02d} minutes")
+                f"    > At {process_names[i]} lines/s : {t_hour:d} hours {t_min:02d} minutes")
         else:
             print(
-                f"    > At {process_names[i]} lines/s : {min:02d} minutes {sec:02d} seconds")
+                f"    > At {process_names[i]} lines/s : {t_min:02d} minutes {t_sec:02d} seconds")
 
     # Wait for user to press enter
     input('[Press enter to exit]')
 
+
 # method to check if a word is in the list of stop words
 def is_stop_word(word):
     # define the stop words
-    stop_words = ["new", "like", "want", "like", "your", "you're", "good", "i", "me", "my", "myself", "we", "our", "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself", "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs", "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are", "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing", "a", "an", "the", "and", "but", "if", "or", "because", "as",
-                  "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through", "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off", "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how", "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not", "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should", "now"]
+    stop_words = ["new", "like", "want", "like", "your", "you're", "good", "i", "me", "my", "myself", "we", "our",
+                  "ours", "ourselves", "you", "your", "yours", "yourself", "yourselves", "he", "him", "his", "himself",
+                  "she", "her", "hers", "herself", "it", "its", "itself", "they", "them", "their", "theirs",
+                  "themselves", "what", "which", "who", "whom", "this", "that", "these", "those", "am", "is", "are",
+                  "was", "were", "be", "been", "being", "have", "has", "had", "having", "do", "does", "did", "doing",
+                  "a", "an", "the", "and", "but", "if", "or", "because", "as",
+                  "until", "while", "of", "at", "by", "for", "with", "about", "against", "between", "into", "through",
+                  "during", "before", "after", "above", "below", "to", "from", "up", "down", "in", "out", "on", "off",
+                  "over", "under", "again", "further", "then", "once", "here", "there", "when", "where", "why", "how",
+                  "all", "any", "both", "each", "few", "more", "most", "other", "some", "such", "no", "nor", "not",
+                  "only", "own", "same", "so", "than", "too", "very", "s", "t", "can", "will", "just", "don", "should",
+                  "now"]
     if word.lower() in stop_words:
         return True
     else:
         return False
 
+
 if __name__ == "__main__":
     main()
-
